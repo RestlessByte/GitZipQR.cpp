@@ -14,6 +14,9 @@
 #include <iostream>
 #include <unistd.h>
 namespace gzqr {
+
+// forward decl for encoder PNG writer
+void save_qr_png_lib(const std::string& out, const std::string& text, int ecl_level, int version, int margin, int scale);
 struct KDFParams { uint64_t N; uint32_t r; uint32_t p; };
 inline std::string sha256_hex(const std::vector<uint8_t>& buf){ unsigned char h[32]; SHA256(buf.data(), buf.size(), h);
   static const char* X="0123456789abcdef"; std::string s(64,'0'); for(int i=0;i<32;i++){ s[2*i]=X[(h[i]>>4)&15]; s[2*i+1]=X[h[i]&15]; } return s; }
@@ -66,3 +69,58 @@ inline std::vector<uint8_t> read_all(const std::string&p){ FILE*f=fopen(p.c_str(
   std::vector<uint8_t> v; std::vector<uint8_t>b(1<<20); size_t n; while((n=fread(b.data(),1,b.size(),f))>0) v.insert(v.end(),b.begin(),b.begin()+n); fclose(f); return v; }
 inline void write_all(const std::string&p,const std::vector<uint8_t>&v){ FILE*f=fopen(p.c_str(),"wb"); if(!f) throw std::runtime_error("open out"); fwrite(v.data(),1,v.size(),f); fclose(f); }
 }
+
+namespace gzqr {
+// AES-256-GCM file decrypt: inFile -> outFile
+inline void aes_gcm_decrypt_file_to_path(const std::string& inFile,
+                                         const std::string& outFile,
+                                         const std::vector<unsigned char>& key,
+                                         const std::vector<unsigned char>& nonce,
+                                         const std::vector<unsigned char>& aad)
+{
+  FILE* fi = fopen(inFile.c_str(), "rb");
+  if(!fi) throw std::runtime_error("open input cipher");
+  FILE* fo = fopen(outFile.c_str(), "wb");
+  if(!fo){ fclose(fi); throw std::runtime_error("open output file"); }
+
+  EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+  if(!ctx){ fclose(fi); fclose(fo); throw std::runtime_error("ctx new"); }
+
+  if(1!=EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, nullptr, nullptr))
+    throw std::runtime_error("dec init");
+
+  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, nonce.size(), nullptr);
+  EVP_DecryptInit_ex(ctx, nullptr, nullptr, key.data(), nonce.data());
+  if(!aad.empty())
+    EVP_DecryptUpdate(ctx, nullptr, nullptr, aad.data(), aad.size());
+
+  std::vector<unsigned char> buf(1<<20), obuf(1<<20);
+  int n, outl;
+  fseek(fi,0,SEEK_END);
+  long total=ftell(fi);
+  fseek(fi,0,SEEK_SET);
+  long dataLen=total-16;
+  if(dataLen<0){ fclose(fi); fclose(fo); EVP_CIPHER_CTX_free(ctx); throw std::runtime_error("cipher too short"); }
+  std::vector<unsigned char> tag(16);
+  fseek(fi,dataLen,SEEK_SET); fread(tag.data(),1,16,fi);
+  fseek(fi,0,SEEK_SET);
+
+  long remain=dataLen;
+  while(remain>0){
+    size_t r=fread(buf.data(),1,std::min((long)buf.size(),remain),fi);
+    remain-=r;
+    if(1!=EVP_DecryptUpdate(ctx,obuf.data(),&outl,buf.data(),r)){
+      fclose(fi); fclose(fo); EVP_CIPHER_CTX_free(ctx); throw std::runtime_error("dec upd");
+    }
+    if(outl>0) fwrite(obuf.data(),1,outl,fo);
+  }
+  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, tag.data());
+  if(1!=EVP_DecryptFinal_ex(ctx,obuf.data(),&outl)){
+    fclose(fi); fclose(fo); EVP_CIPHER_CTX_free(ctx);
+    throw std::runtime_error("dec final (tag mismatch)");
+  }
+  if(outl>0) fwrite(obuf.data(),1,outl,fo);
+
+  fclose(fi); fclose(fo); EVP_CIPHER_CTX_free(ctx);
+}
+} // namespace gzqr
