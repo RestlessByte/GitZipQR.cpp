@@ -27,90 +27,90 @@ To restore, point the decoder at the PNGs — integrity is verified (chunk + glo
 Pick your OS and run the block below.
 
 **Ubuntu / Debian:**
-\`\`\`bash
-sudo apt update && sudo apt install -y \
-  g++ make pkg-config git \
-  libssl-dev libpng-dev \
-  libqrencode-dev \
-  zxing-cpp \
+```bash
+sudo apt update && sudo apt install -y 
+  g++ make pkg-config git 
+  libssl-dev libpng-dev 
+  libqrencode-dev 
+  zxing-cpp 
   zip
-\`\`\`
+```
 
 **Fedora (dnf):**
-\`\`\`bash
-sudo dnf install -y \
-  gcc-c++ make git pkgconf-pkg-config \
-  openssl-devel libpng-devel \
-  qrencode-devel \
-  zxing-cpp-devel \
+```bash
+sudo dnf install -y 
+  gcc-c++ make git pkgconf-pkg-config 
+  openssl-devel libpng-devel 
+  qrencode-devel 
+  zxing-cpp-devel 
   zip
-\`\`\`
+```
 
 **Arch Linux:**
-\`\`\`bash
-sudo pacman -S --needed --noconfirm \
-  base-devel git \
+```bash
+sudo pacman -S --needed --noconfirm 
+  base-devel git 
   openssl libpng qrencode zxing-cpp zip
-\`\`\`
+```
 
 **Windows (MSYS2 MinGW64 shell):**
-\`\`\`bash
-pacman -S --noconfirm git make \
-  mingw-w64-x86_64-toolchain \
-  mingw-w64-x86_64-openssl \
-  mingw-w64-x86_64-libpng \
-  mingw-w64-x86_64-qrencode \
-  mingw-w64-x86_64-zxing-cpp \
+```bash
+pacman -S --noconfirm git make 
+  mingw-w64-x86_64-toolchain 
+  mingw-w64-x86_64-openssl 
+  mingw-w64-x86_64-libpng 
+  mingw-w64-x86_64-qrencode 
+  mingw-w64-x86_64-zxing-cpp 
   zip
-\`\`\`
+```
 
 ---
 
 ### 2) Build the project
 
-\`\`\`bash
+```bash
 git clone https://github.com/RestlessByte/GitZipQR.cpp.git
 cd GitZipQR-CPP
 make -j$(nproc)
 # binaries:
 #   build/MakeEncode
 #   build/MakeDecode
-\`\`\`
+```
 
 ---
 
 ### 3) Encode & Decode
 
 **Encode (file → QR PNGs):**
-\`\`\`bash
+```bash
 export GZQR_PASS='MyStrongSecret'
 build/MakeEncode ./example.txt ./qrcodes
-\`\`\`
+```
 
 **Encode (folder → QR PNGs):**
-\`\`\`bash
+```bash
 export GZQR_PASS='MyStrongSecret'
 build/MakeEncode ./my-folder ./qrcodes
-\`\`\`
+```
 
 **Decode (QR PNGs → restore):**
-\`\`\`bash
+```bash
 export GZQR_PASS='MyStrongSecret'
 build/MakeDecode ./qrcodes ./restore
-\`\`\`
+```
 
 - File restored as `./restore/example.txt`  
 - Folder restored as `./restore/my-folder.zip` (ZIP contains relative paths only)
 
 ---
 
-## ⚙️ Defaults (\`src/config.hpp\`)
+## ⚙️ Defaults (`src/config.hpp`)
 
 - **QR Version:** 40  
 - **ECC Level:** L (max capacity)  
 - **PNG Margin:** 1  
 - **PNG Scale:** 8  
-- **Default password:** \`SuperSecret123\` (override with \`GZQR_PASS\`)  
+- **Default password:** `SuperSecret123` (override with `GZQR_PASS`)  
 - **Progress counters:** enabled  
 
 ⚠️ Always override the password for real use.
@@ -130,7 +130,7 @@ build/MakeDecode ./qrcodes ./restore
 
 ## 🧪 Example
 
-\`\`\`bash
+```bash
 # prepare demo dir
 mkdir -p demo/sub && echo "hello" > demo/sub/file.txt
 
@@ -143,7 +143,7 @@ build/MakeDecode ./qrs ./restore
 
 # inspect zip layout
 zipinfo -1 ./restore/demo.zip | head -n 20
-\`\`\`
+```
 
 ---
 
