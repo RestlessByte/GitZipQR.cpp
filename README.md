@@ -1,5 +1,6 @@
 # GitZipQR-CPP — QR-based encrypted backup tool 📦🔐📱
 # [TypeScript code - prototype,dev](https://github.com/RestlessByte/GitZipQR.ts)
+![GitZipQR Structure](https://github.com/RestlessByte/GitZipQR/blob/main/assets/structures/structures.png)
 Turns any file or folder into **encrypted QR codes** and restores them back.  
 Input folders are zipped (with **relative paths only**, no absolute prefixes), then encrypted with **AES-256-GCM** (key from **scrypt**), split into calibrated **QR chunks**, and saved as **PNG** images.  
 To restore, point the decoder at the PNGs — integrity is verified (chunk + global SHA-256) and the original file/zip is recreated.
