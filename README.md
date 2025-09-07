@@ -71,7 +71,8 @@ pacman -S --noconfirm git make
 
 ```bash
 git clone https://github.com/RestlessByte/GitZipQR.cpp.git
-cd GitZipQR-CPP
+cd GitZipQR.cpp
+cp src/config.example.hpp src/config.hpp
 make -j$(nproc)
 # binaries:
 #   build/MakeEncode
