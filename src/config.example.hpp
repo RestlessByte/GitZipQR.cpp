@@ -52,7 +52,7 @@ namespace gzqr_config
 
     char password[150];
     std::snprintf(password, sizeof(password), "GitZipQR.cpp#Security %s", time_str); // format to DDMMYYYY (e.g., 7092025 for 7 September, 2025)
-    // your can did custom password
+    // your can did custom password remove (%s)
     return std::string(password);
   }
 
