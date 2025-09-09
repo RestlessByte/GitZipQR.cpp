@@ -9,7 +9,8 @@ To restore, point the decoder at the PNGs — integrity is verified (chunk + glo
 **License:** MIT
 
 ---
-
+# Dependencies 
+- ZIP
 ## ✨ Highlights
 
 - **Strong crypto:** AES-256-GCM + scrypt KDF (N=2^15, r=8, p=#cores)  
